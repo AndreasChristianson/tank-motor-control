@@ -23,12 +23,10 @@ const int pwmChannel2 = 1;
 const int resolution = 8;
 int dutyCycle = 200;
 
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET -1  // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
   Serial.println("Hello Computer");
   Wire.begin();
@@ -58,7 +56,6 @@ void setup() {
 }
 
 void acceptControl(BLEDevice peripheral) {
-  // connect to the peripheral
   Serial.println("Connecting ...");
 
   if (peripheral.connect()) {
@@ -85,7 +82,6 @@ void acceptControl(BLEDevice peripheral) {
   }
 
 
-  // retrieve the LED characteristic
   BLECharacteristic lxChar = peripheral.characteristic("6AB4");
   BLECharacteristic lyChar = peripheral.characteristic("A096");
   BLECharacteristic lwChar = peripheral.characteristic("11D2");
@@ -146,13 +142,6 @@ void acceptControl(BLEDevice peripheral) {
       Serial.print("value updated: rw = ");
       Serial.println(rw);
     }
-    // Serial.print(lx);
-    // Serial.print(",");
-    // Serial.print(ly);
-    // Serial.print(" - ");
-    // Serial.print(rx);
-    // Serial.print(",");
-    // Serial.println(ry);
     if (ry < 4096 / 3) {
 
       digitalWrite(motor1Pin1, LOW);
@@ -200,7 +189,6 @@ void acceptControl(BLEDevice peripheral) {
       display.print("0");
     }
     display.display();
-    // delay(100);
   }
 }
 
