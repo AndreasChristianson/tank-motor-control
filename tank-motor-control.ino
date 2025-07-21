@@ -40,12 +40,8 @@ void setup() {
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
-  ledcSetup(pwmChannel1, freq, resolution);
-  ledcSetup(pwmChannel2, freq, resolution);
-
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(enable1Pin, pwmChannel1);
-  ledcAttachPin(enable2Pin, pwmChannel2);
+  ledcAttach(pwmChannel1, freq, resolution);
+  ledcAttach(pwmChannel2, freq, resolution);
 
   BLE.begin();
 
@@ -101,12 +97,12 @@ void acceptControl(BLEDevice peripheral) {
     return;
   }
 
-  int ry = 1900;
-  int rx = 1900;
-  int rw = 0;
-  int ly = 1900;
-  int lx = 1900;
-  int lw = 0;
+  uint32_t ry = 1900;
+  uint32_t rx = 1900;
+  uint32_t rw = 0;
+  uint32_t ly = 1900;
+  uint32_t lx = 1900;
+  uint32_t lw = 0;
 
   while (peripheral.connected()) {
 
