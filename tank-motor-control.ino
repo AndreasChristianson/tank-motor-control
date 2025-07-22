@@ -27,8 +27,8 @@ int dutyCycle = 200;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Hello Computer");
+  Serial.begin(115200);
+  Serial.println("Hello Computer!!");
   Wire.begin();
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
@@ -40,8 +40,13 @@ void setup() {
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
-  ledcAttach(pwmChannel1, freq, resolution);
-  ledcAttach(pwmChannel2, freq, resolution);
+  Serial.println("beginning led attachment");
+  if(
+    !ledcAttachChannel(enable1Pin, freq, resolution, pwmChannel1) || 
+    !ledcAttachChannel(enable2Pin, freq, resolution, pwmChannel2)
+    ){
+      Serial.println("unable to attach led for pwm");
+  }
 
   BLE.begin();
 
@@ -143,7 +148,7 @@ void acceptControl(BLEDevice peripheral) {
       digitalWrite(motor1Pin1, LOW);
       digitalWrite(motor1Pin2, HIGH);
       int duty = (4096 / 3 - ry) * 256 / (4096 / 3);
-      ledcWrite(pwmChannel1, duty);
+      ledcWrite(enable1Pin, duty);
       display.setCursor(0, 20);
       display.print("+" + String(duty, DEC));
     } else if (ry > 2 * 4096 / 3) {
@@ -151,13 +156,13 @@ void acceptControl(BLEDevice peripheral) {
       digitalWrite(motor1Pin1, HIGH);
       digitalWrite(motor1Pin2, LOW);
       int duty = (ry - 2 * 4096 / 3) * 256 / (4096 / 3);
-      ledcWrite(pwmChannel1, duty);
+      ledcWrite(enable1Pin, duty);
       display.setCursor(0, 20);
       display.print("-" + String(duty, DEC));
     } else {
       digitalWrite(motor1Pin1, LOW);
       digitalWrite(motor1Pin2, LOW);
-      ledcWrite(pwmChannel1, 0);
+      ledcWrite(enable1Pin, 0);
       display.setCursor(0, 20);
       display.print("0");
     }
@@ -166,7 +171,7 @@ void acceptControl(BLEDevice peripheral) {
       digitalWrite(motor2Pin1, LOW);
       digitalWrite(motor2Pin2, HIGH);
       int duty = (4096 / 3 - ly) * 256 / (4096 / 3);
-      ledcWrite(pwmChannel2, duty);
+      ledcWrite(enable2Pin, duty);
       display.setCursor(64, 20);
       display.print("+" + String(duty, DEC));
     } else if (ly > 2 * 4096 / 3) {
@@ -174,13 +179,15 @@ void acceptControl(BLEDevice peripheral) {
       digitalWrite(motor2Pin1, HIGH);
       digitalWrite(motor2Pin2, LOW);
       int duty = (ly - 2 * 4096 / 3) * 256 / (4096 / 3);
-      ledcWrite(pwmChannel2, duty);
+      bool suc = ledcWrite(enable2Pin, duty);
+      Serial.println("set ledc: " + String(suc));
+      Serial.println("duty: " + String(duty, DEC));
       display.setCursor(64, 20);
       display.print("-" + String(duty, DEC));
     } else {
       digitalWrite(motor2Pin1, LOW);
       digitalWrite(motor2Pin2, LOW);
-      ledcWrite(pwmChannel2, 0);
+      ledcWrite(enable2Pin, 0);
       display.setCursor(64, 20);
       display.print("0");
     }
