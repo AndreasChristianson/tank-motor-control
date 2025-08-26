@@ -26,6 +26,7 @@ int dutyCycle = 200;
 #define OLED_RESET -1  // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Hello Computer!!");
@@ -41,11 +42,9 @@ void setup() {
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
   Serial.println("beginning led attachment");
-  if(
-    !ledcAttachChannel(enable1Pin, freq, resolution, pwmChannel1) || 
-    !ledcAttachChannel(enable2Pin, freq, resolution, pwmChannel2)
-    ){
-      Serial.println("unable to attach led for pwm");
+  if (
+    !ledcAttachChannel(enable1Pin, freq, resolution, pwmChannel1) || !ledcAttachChannel(enable2Pin, freq, resolution, pwmChannel2)) {
+    Serial.println("unable to attach led for pwm");
   }
 
   BLE.begin();
@@ -66,11 +65,6 @@ void acceptControl(BLEDevice peripheral) {
     return;
   }
 
-  Serial.print("char count: ");
-  Serial.println(peripheral.characteristicCount());
-
-  Serial.print("char 0 uuid: ");
-  Serial.println(peripheral.characteristic(0).uuid());
 
   // discover peripheral attributes
   Serial.println("Discovering attributes ...");
@@ -82,21 +76,47 @@ void acceptControl(BLEDevice peripheral) {
     return;
   }
 
+  Serial.print("char count: ");
+  Serial.println(peripheral.characteristicCount());
+  for (int i=0; i<peripheral.characteristicCount(); i++) {
+    Serial.print("char uuid: ");
+    Serial.print(i);
+    Serial.print(" => ");
+    Serial.println(peripheral.characteristic(i).uuid());
+  }
 
-  BLECharacteristic lxChar = peripheral.characteristic("6AB4");
+  Serial.print("char 11 descriptor count: ");
+  Serial.println(peripheral.characteristic(11).descriptorCount());
+  for (int i=0; i<peripheral.characteristic(11).descriptorCount(); i++) {
+    Serial.print("desc uuid: ");
+    Serial.print(i);
+    Serial.print(" => ");
+    Serial.println(peripheral.characteristic(11).descriptor(i).uuid());
+  }
+
+  Serial.print("char 12 descriptor count: ");
+  Serial.println(peripheral.characteristic(12).descriptorCount());
+  for (int i=0; i<peripheral.characteristic(12).descriptorCount(); i++) {
+    Serial.print("desc uuid: ");
+    Serial.print(i);
+    Serial.print(" => ");
+    Serial.println(peripheral.characteristic(12).descriptor(i).uuid());
+  }
+
+  // BLECharacteristic lxChar = peripheral.characteristic("6AB4");
   BLECharacteristic lyChar = peripheral.characteristic("A096");
-  BLECharacteristic lwChar = peripheral.characteristic("11D2");
-  BLECharacteristic rxChar = peripheral.characteristic("87B4");
+  // BLECharacteristic lwChar = peripheral.characteristic("11D2");
+  // BLECharacteristic rxChar = peripheral.characteristic("87B4");
   BLECharacteristic ryChar = peripheral.characteristic("B5EC");
-  BLECharacteristic rwChar = peripheral.characteristic("3A8E");
-  lxChar.subscribe();
+  // BLECharacteristic rwChar = peripheral.characteristic("3A8E");
+  // lxChar.subscribe();
   lyChar.subscribe();
-  lwChar.subscribe();
-  rxChar.subscribe();
+  // lwChar.subscribe();
+  // rxChar.subscribe();
   ryChar.subscribe();
-  rwChar.subscribe();
+  // rwChar.subscribe();
 
-  if (!lxChar || !lyChar || !lwChar || !rxChar || !ryChar || !rwChar) {
+  if ( !lyChar || !ryChar) {
     Serial.println("Peripheral does not have characteristics!");
     peripheral.disconnect();
     return;
@@ -113,36 +133,36 @@ void acceptControl(BLEDevice peripheral) {
 
     display.clearDisplay();
     display.setTextColor(WHITE);
-    if (lxChar.valueUpdated()) {
-      lxChar.readValue(lx);
-      Serial.print("value updated: lx = ");
-      Serial.println(lx);
-    }
+    // if (lxChar.valueUpdated()) {
+    //   lxChar.readValue(lx);
+    //   Serial.print("value updated: lx = ");
+    //   Serial.println(lx);
+    // }
     if (lyChar.valueUpdated()) {
       lyChar.readValue(ly);
       Serial.print("value updated: ly = ");
       Serial.println(ly);
     }
-    if (lwChar.valueUpdated()) {
-      lwChar.readValue(lw);
-      Serial.print("value updated: lw = ");
-      Serial.println(lw);
-    }
-    if (rxChar.valueUpdated()) {
-      rxChar.readValue(rx);
-      Serial.print("value updated: rx = ");
-      Serial.println(rx);
-    }
+    // if (lwChar.valueUpdated()) {
+    //   lwChar.readValue(lw);
+    //   Serial.print("value updated: lw = ");
+    //   Serial.println(lw);
+    // }
+    // if (rxChar.valueUpdated()) {
+    //   rxChar.readValue(rx);
+    //   Serial.print("value updated: rx = ");
+    //   Serial.println(rx);
+    // }
     if (ryChar.valueUpdated()) {
       ryChar.readValue(ry);
       Serial.print("value updated: ry = ");
       Serial.println(ry);
     }
-    if (rwChar.valueUpdated()) {
-      rwChar.readValue(rw);
-      Serial.print("value updated: rw = ");
-      Serial.println(rw);
-    }
+    // if (rwChar.valueUpdated()) {
+    //   rwChar.readValue(rw);
+    //   Serial.print("value updated: rw = ");
+    //   Serial.println(rw);
+    // }
     if (ry < 4096 / 3) {
 
       digitalWrite(motor1Pin1, LOW);
@@ -180,8 +200,6 @@ void acceptControl(BLEDevice peripheral) {
       digitalWrite(motor2Pin2, LOW);
       int duty = (ly - 2 * 4096 / 3) * 256 / (4096 / 3);
       bool suc = ledcWrite(enable2Pin, duty);
-      Serial.println("set ledc: " + String(suc));
-      Serial.println("duty: " + String(duty, DEC));
       display.setCursor(64, 20);
       display.print("-" + String(duty, DEC));
     } else {
